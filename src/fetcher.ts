@@ -112,6 +112,7 @@ export async function checkTarget(target: Target): Promise<CheckResult> {
     try {
       await page.goto(target.url, { waitUntil: "domcontentloaded", timeout: 30_000 });
       await dismissCookieBanner(page);
+      await dismissStoreConfirmation(page);
       // After dismissing, give the page a beat to actually render its real content.
       await page.waitForLoadState("networkidle", { timeout: 8_000 }).catch(() => {});
 
@@ -163,6 +164,7 @@ async function dismissCookieBanner(page: import("playwright").Page): Promise<voi
     "button[data-testid='uc-deny-all-button']",
     "button[data-testid='uc-accept-all-button']",
     // Generic text-based fallbacks (German + English)
+    "button:has-text('Nur notwendige erlauben')",  // Bauhaus
     "button:has-text('Nur notwendige')",
     "button:has-text('Alle ablehnen')",
     "button:has-text('Cookies zulassen')",
@@ -175,6 +177,29 @@ async function dismissCookieBanner(page: import("playwright").Page): Promise<voi
     if (await btn.isVisible({ timeout: 500 }).catch(() => false)) {
       await btn.click({ timeout: 2_000 }).catch(() => {});
       // Once we clicked one, we're done — don't click multiple banners.
+      return;
+    }
+  }
+}
+
+/**
+ * Some Baumärkte (Hornbach, OBI) show a "Is this your local store?" modal
+ * BEFORE the product detail renders. If we don't dismiss it, our body-text
+ * snapshot is just the modal and we read "Unknown" forever. Accept the auto-
+ * detected store — it's about availability lookup, not delivery binding.
+ */
+async function dismissStoreConfirmation(page: import("playwright").Page): Promise<void> {
+  const selectors = [
+    "button:has-text('JA, RICHTIG')",
+    "button:has-text('Ja, richtig')",
+    "button:has-text('Markt bestätigen')",
+    "button:has-text('Diesen Markt wählen')",
+    "button:has-text('Markt übernehmen')",
+  ];
+  for (const sel of selectors) {
+    const btn = page.locator(sel).first();
+    if (await btn.isVisible({ timeout: 500 }).catch(() => false)) {
+      await btn.click({ timeout: 2_000 }).catch(() => {});
       return;
     }
   }
