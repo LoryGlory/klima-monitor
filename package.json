@@ -1,0 +1,25 @@
+{
+  "name": "klima-monitor",
+  "version": "0.1.0",
+  "description": "Polite self-hosted stock monitor for the Midea PortaSplit across German retailers",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts",
+    "once": "tsx src/index.ts --once"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.3.0",
+    "dotenv": "^17.4.2",
+    "node-cron": "^3.0.3",
+    "playwright": "^1.48.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.11",
+    "@types/node": "^22.7.0",
+    "@types/node-cron": "^3.0.11",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}

@@ -1,0 +1,11 @@
+node_modules/
+dist/
+state.db
+state.db-journal
+state.db-wal
+state.db-shm
+.env
+*.log
+scratch-*.mjs
+/tmp/
+.DS_Store
