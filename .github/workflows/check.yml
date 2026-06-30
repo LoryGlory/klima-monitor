@@ -52,5 +52,6 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           CONTACT_EMAIL: ${{ secrets.CONTACT_EMAIL }}
+          MAX_PRICE_EUR: ${{ vars.MAX_PRICE_EUR }}
           JITTER_SECONDS: "3"
         run: npm run once

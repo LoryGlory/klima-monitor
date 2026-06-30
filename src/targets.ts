@@ -22,19 +22,31 @@ import type { Target, CheckResult } from "./types.js";
  *  - Expert.de: gated by Cookiebot consent — works but needs careful selector tuning.
  */
 
+/**
+ * Pull the first DE-formatted euro price out of body text, e.g. "1.099,00 €".
+ * German number format: "." = thousands separator, "," = decimal separator.
+ * Returns null if no price found.
+ */
+function extractGermanPrice(text: string): number | null {
+  const m = /(\d{1,3}(?:\.\d{3})*|\d+),(\d{2})\s*€/.exec(text);
+  if (!m) return null;
+  return Number(m[1].replaceAll(".", "") + "." + m[2]);
+}
+
 /** Klimaworld-specific: their UI explicitly distinguishes vorrätig vs nicht vorrätig. */
 function parseKlimaworldText(text: string): CheckResult {
   const t = text.toLowerCase();
+  const price = extractGermanPrice(text);
   // Explicit OOS markers Klimaworld uses on its product pages.
   if (/nicht vorrätig|lieferzeit anfragen|alternative produkte|ausverkauft/.test(t)) {
-    return { availability: "OutOfStock" };
+    return { availability: "OutOfStock", price };
   }
   // Positive marker — note: Klimaworld is a consultative seller (phone/email order)
   // so "InStock" here means "Klimaworld has inventory; call to order".
   if (/auf lager|sofort verfügbar|sofort lieferbar/.test(t)) {
-    return { availability: "InStock" };
+    return { availability: "InStock", price };
   }
-  return { availability: "Unknown" };
+  return { availability: "Unknown", price };
 }
 
 /**

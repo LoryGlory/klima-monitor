@@ -5,9 +5,25 @@ import { targets } from "./targets.js";
 import { checkTarget, closeBrowser } from "./fetcher.js";
 import { getPrevious, saveStatus, isRestock } from "./state.js";
 import { notifyRestock } from "./notify.js";
+import type { Target, CheckResult } from "./types.js";
 
 const JITTER_SECONDS = Number(process.env.JITTER_SECONDS ?? 20);
 const CRON = process.env.CRON ?? "*/3 * * * *";
+
+/** Decide whether a restock event should fire a Telegram alert. */
+async function handleRestock(target: Target, result: CheckResult) {
+  // Suppress alerts above MAX_PRICE_EUR — see overpriced marketplace listings
+  // (e.g. third-party MM sellers at 1949€). null price = unknown, do alert.
+  const maxPrice = Number(process.env.MAX_PRICE_EUR) || Infinity;
+  if (result.price != null && result.price > maxPrice) {
+    console.log(
+      `  🔕 RESTOCK at ${target.retailer} suppressed (${result.price.toFixed(2)} € > ${maxPrice} € cap)`,
+    );
+    return;
+  }
+  console.log(`  🟢 RESTOCK at ${target.retailer} — notifying`);
+  await notifyRestock(target, result);
+}
 
 async function runPass() {
   const stamp = new Date().toISOString();
@@ -28,8 +44,7 @@ async function runPass() {
 
     if (result.availability !== "Unknown") {
       if (isRestock(prev, result.availability)) {
-        console.log(`  🟢 RESTOCK at ${target.retailer} — notifying`);
-        await notifyRestock(target, result);
+        await handleRestock(target, result);
       }
       saveStatus(target.id, result.availability, result.price);
     }
