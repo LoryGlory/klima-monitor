@@ -1,6 +1,6 @@
 import type { Target, CheckResult } from "./types.js";
 
-async function sendTelegram(text: string) {
+export async function sendTelegram(text: string) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;
   if (!token || !chatId) return false;

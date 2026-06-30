@@ -187,6 +187,9 @@ export const targets: Target[] = [
   // Bauhaus dropped — its cookie wall renders post-domcontentloaded faster than
   // we can dismiss and the product detail isn't visible to our body-text
   // snapshot. Worth revisiting with a dedicated wait-for-cookie-modal step.
+  //
+  // Hornbach dropped — URL `/p/.../12356554/` returns Hornbach's "Moment, da
+  // fehlt was!" 404 page. Product ID seems retired. Re-add if a fresh URL surfaces.
 
   // =========================================================================
   // PRIORITY 2: Comfee MPPH-09CRN7 (~250–550€) — cheap, often stocked
@@ -240,5 +243,16 @@ export const targets: Target[] = [
     url: "https://www.saturn.de/de/product/_delonghi-pac-em90-silent-2715591.html",
     method: "render",
     check: checkMediaMarkt,
+  },
+
+  // =========================================================================
+  // PRIORITY 4: Trotec PAC 3501 S WiFi (3.5 kW) — manufacturer direct, ~530€
+  // =========================================================================
+  {
+    id: "trotec-direct-pac3501swifi",
+    retailer: "Trotec (direct)",
+    product: "PAC 3501 S WiFi 3.5 kW",
+    url: "https://de.trotec.com/shop/lokales-klimageraet-pac-3501-s-wifi.html",
+    method: "jsonld",
   },
 ];

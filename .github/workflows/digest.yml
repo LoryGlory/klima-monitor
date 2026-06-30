@@ -1,0 +1,45 @@
+name: klima-monitor-digest
+
+on:
+  schedule:
+    # 07:00 UTC = 09:00 Berlin (CEST/summer). One liveness-and-state message per day.
+    - cron: "0 7 * * *"
+  workflow_dispatch:
+
+# Don't conflict with concurrent check.yml runs.
+concurrency:
+  group: klima-digest
+  cancel-in-progress: false
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install npm deps
+        run: npm ci
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Install Playwright Chromium (with deps)
+        run: npx playwright install --with-deps chromium
+
+      - name: Send digest
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          CONTACT_EMAIL: ${{ secrets.CONTACT_EMAIL }}
+          MAX_PRICE_EUR: ${{ vars.MAX_PRICE_EUR }}
+        run: npm run digest
